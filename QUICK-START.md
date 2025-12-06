@@ -3,7 +3,7 @@
 ## Your GoDaddy cPanel Login:
 - **IP**: 148.72.62.132
 - **Username**: f9x6j6g74lx9  
-- **Password**: SM@54adxbI$Y
+- **Password**: Sal@6888
 
 ---
 

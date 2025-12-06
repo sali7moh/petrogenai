@@ -5,7 +5,7 @@
 IP Address: 148.72.62.132
 Port: 22
 Username: f9x6j6g74lx9
-Password: SM@54adxbI$Y
+Password: Sal@6888
 ```
 
 ---
