@@ -37,10 +37,13 @@
                     <input id="email" name="email" type="email" required
                            value="{{ old('email') }}"
                            class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150"
-                           placeholder="you@petrogen.ai">
+                           placeholder="you@petrogen.sa">
                     @error('email')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <p class="mt-1 text-xs text-gray-600">
+                        <span class="font-medium">Note:</span> Only <span class="font-mono text-blue-600">@petrogen.sa</span> email addresses are allowed
+                    </p>
                 </div>
 
                 <!-- Department Field -->

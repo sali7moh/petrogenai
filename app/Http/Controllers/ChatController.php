@@ -7,6 +7,7 @@ use App\Models\Message;
 use App\Models\Attachment;
 use App\Services\OpenAIService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -31,13 +32,14 @@ class ChatController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'conversation_id' => 'nullable|exists:conversations,id',
-            'message' => 'required|string',
-            'attachments.*' => 'file|max:10240', // 10MB max
-        ]);
+        try {
+            $request->validate([
+                'conversation_id' => 'nullable|exists:conversations,id',
+                'message' => 'required|string',
+                'attachments.*' => 'file|max:10240', // 10MB max
+            ]);
 
-        $user = auth()->user();
+            $user = auth()->user();
 
         // Create or get conversation
         if ($request->conversation_id) {
@@ -64,10 +66,22 @@ class ChatController extends Controller
                 $filename = Str::random(40) . '.' . $file->getClientOriginalExtension();
                 $path = $file->storeAs('attachments', $filename);
 
+                Log::info('Processing attachment', [
+                    'filename' => $file->getClientOriginalName(),
+                    'mime_type' => $file->getMimeType(),
+                    'size' => $file->getSize()
+                ]);
+
                 $extractedText = $this->openAIService->extractTextFromFile(
                     $file->getRealPath(),
                     $file->getMimeType()
                 );
+
+                Log::info('Extracted text preview', [
+                    'filename' => $file->getClientOriginalName(),
+                    'text_length' => strlen($extractedText),
+                    'preview' => substr($extractedText, 0, 200)
+                ]);
 
                 $attachment = Attachment::create([
                     'message_id' => $userMessage->id,
@@ -118,6 +132,18 @@ class ChatController extends Controller
             'success' => false,
             'message' => 'Failed to get AI response. Please try again.',
         ], 500);
+        } catch (\Exception $e) {
+            Log::error('Chat store error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function show(Conversation $conversation)
@@ -145,23 +171,50 @@ class ChatController extends Controller
     {
         $messages = [];
 
-        // Add system message
-        $messages[] = $this->openAIService->createSystemMessage($attachmentText);
+        // Add system message without attachment (we'll add attachment to user message)
+        $messages[] = $this->openAIService->createSystemMessage();
 
         // Add conversation history (limit to last 10 messages for context)
+        // Exclude the very last message since we'll add it with attachment text
         $conversationMessages = $conversation->messages()
             ->whereIn('role', ['user', 'assistant'])
-            ->orderBy('created_at', 'desc')
-            ->take(10)
-            ->get()
-            ->reverse();
+            ->orderBy('created_at', 'asc')
+            ->get();
 
-        foreach ($conversationMessages as $msg) {
+        // Get all messages except the last one (current message)
+        $historyMessages = $conversationMessages->slice(0, -1)->take(18);
+
+        foreach ($historyMessages as $msg) {
             $messages[] = [
                 'role' => $msg->role,
                 'content' => $msg->content,
             ];
         }
+
+        // Add the current message with attachment text
+        if ($conversationMessages->count() > 0) {
+            $lastMessage = $conversationMessages->last();
+            $content = $lastMessage->content;
+            
+            // If there's attachment text, append it to the user's message
+            if (!empty($attachmentText)) {
+                $content .= "\n\n" . $attachmentText;
+                Log::info('Adding attachment to message', [
+                    'attachment_length' => strlen($attachmentText),
+                    'has_pdf_marker' => strpos($attachmentText, '[PDF Content Extracted]') !== false
+                ]);
+            }
+            
+            $messages[] = [
+                'role' => $lastMessage->role,
+                'content' => $content,
+            ];
+        }
+
+        Log::info('Prepared messages for AI', [
+            'total_messages' => count($messages),
+            'last_message_length' => isset($content) ? strlen($content) : 0
+        ]);
 
         return $messages;
     }

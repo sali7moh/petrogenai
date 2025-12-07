@@ -6,17 +6,56 @@
 @layer base {
     body {
         font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* RTL Support */
+    [dir="rtl"] {
+        font-family: 'Cairo', 'Inter', sans-serif;
     }
 }
 
 @layer components {
     .btn-primary {
-        @apply px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-lg hover:from-blue-700 hover:to-indigo-800 transition duration-150;
+        @apply px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition duration-200;
     }
     
     .input-field {
         @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
     }
+}
+
+/* Message formatting like ChatGPT */
+.whitespace-pre-wrap {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.leading-relaxed {
+    line-height: 1.625;
+}
+
+code {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 0.875rem;
+}
+
+code.block {
+    display: block;
+    overflow-x: auto;
+}
+
+/* RTL-specific styles */
+[dir="rtl"] .space-x-2 > * + *,
+[dir="rtl"] .space-x-3 > * + * {
+    margin-right: 0.5rem;
+    margin-left: 0;
+}
+
+[dir="rtl"] .rtl\:space-x-reverse > * + * {
+    margin-right: 0.5rem;
+    margin-left: 0;
 }
 
 /* Scrollbar Styling */

@@ -1,25 +1,30 @@
 @extends('layouts.app')
 
-@section('title', 'Chat - PetrogenAI')
+@section('title', __('messages.new_conversation') . ' - ' . __('messages.app_name'))
 
 @section('content')
 <div class="flex h-screen bg-gray-50 overflow-hidden">
     <!-- Sidebar -->
-    <div id="sidebar" class="w-80 bg-gray-900 text-white flex flex-col transition-all duration-300 ease-in-out">
+    <div id="sidebar" class="w-80 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col transition-all duration-300 ease-in-out shadow-2xl">
         <!-- Sidebar Header -->
-        <div class="p-4 border-b border-gray-800">
+        <div class="p-4 border-b border-gray-700">
             <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-3">
-                    <img src="{{ asset('logo.svg') }}" alt="PetrogenAI" class="h-10 w-auto">
+                <div class="flex items-center space-x-3 rtl:space-x-reverse">
+                    <img src="{{ asset('logo.svg') }}" alt="{{ __('messages.app_name') }}" class="h-10 w-auto">
+                </div>
+                <!-- Language Switcher -->
+                <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                    <button onclick="switchLanguage('en')" class="px-2 py-1 rounded {{ app()->getLocale() == 'en' ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600' }} transition text-xs font-semibold">EN</button>
+                    <button onclick="switchLanguage('ar')" class="px-2 py-1 rounded {{ app()->getLocale() == 'ar' ? 'bg-blue-600' : 'bg-gray-700 hover:bg-gray-600' }} transition text-xs font-semibold">AR</button>
                 </div>
             </div>
             
             <!-- New Chat Button -->
-            <button onclick="startNewChat()" class="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 rounded-lg transition duration-150">
+            <button onclick="startNewChat()" class="w-full flex items-center justify-center space-x-2 rtl:space-x-reverse px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl transition duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                <span class="font-medium">New Chat</span>
+                <span class="font-medium">{{ __('messages.new_chat') }}</span>
             </button>
         </div>
 
@@ -27,7 +32,7 @@
         <div class="flex-1 overflow-y-auto p-4 space-y-2">
             <div id="conversations-list">
                 @forelse($conversations as $conversation)
-                    <div class="conversation-item p-3 rounded-lg hover:bg-gray-800 cursor-pointer transition duration-150 {{ $loop->first ? 'bg-gray-800' : '' }}"
+                    <div class="conversation-item p-3 rounded-xl hover:bg-gradient-to-r hover:from-gray-700 hover:to-gray-800 cursor-pointer transition duration-200 {{ $loop->first ? 'bg-gradient-to-r from-gray-700 to-gray-800' : '' }}"
                          data-id="{{ $conversation->id }}"
                          onclick="loadConversation({{ $conversation->id }})">
                         <div class="flex items-start justify-between">
@@ -40,7 +45,8 @@
                                 </p>
                             </div>
                             <button onclick="deleteConversation({{ $conversation->id }}, event)" 
-                                    class="ml-2 text-gray-500 hover:text-red-500 transition">
+                                    class="ml-2 rtl:ml-0 rtl:mr-2 text-gray-500 hover:text-red-400 transition-colors duration-200"
+                                    title="{{ __('messages.delete') }}">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                 </svg>
@@ -49,17 +55,17 @@
                     </div>
                 @empty
                     <div class="text-center text-gray-500 py-8">
-                        <p class="text-sm">No conversations yet</p>
-                        <p class="text-xs mt-1">Start a new chat to begin</p>
+                        <p class="text-sm">{{ __('messages.no_conversations') }}</p>
+                        <p class="text-xs mt-1">{{ __('messages.start_chat') }}</p>
                     </div>
                 @endforelse
             </div>
         </div>
 
         <!-- User Profile -->
-        <div class="p-4 border-t border-gray-800">
+        <div class="p-4 border-t border-gray-700">
             <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3">
+                <div class="flex items-center space-x-3 rtl:space-x-reverse">
                     <div class="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
                         <span class="text-white font-semibold text-sm">{{ substr(auth()->user()->name, 0, 2) }}</span>
                     </div>
@@ -68,9 +74,9 @@
                         <p class="text-xs text-gray-400">{{ auth()->user()->email }}</p>
                     </div>
                 </div>
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" id="logout-form">
                     @csrf
-                    <button type="submit" class="text-gray-400 hover:text-white transition">
+                    <button type="submit" class="text-gray-400 hover:text-red-400 transition-colors duration-200" title="{{ __('messages.logout') }}">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
@@ -83,11 +89,11 @@
     <!-- Main Chat Area -->
     <div class="flex-1 flex flex-col">
         <!-- Header -->
-        <div class="bg-white border-b border-gray-200 px-6 py-4">
+        <div class="bg-gradient-to-r from-white to-gray-50 border-b border-gray-200 px-6 py-4 shadow-sm">
             <div class="flex items-center justify-between">
                 <div>
-                    <h1 class="text-xl font-semibold text-gray-900" id="chat-title">New Conversation</h1>
-                    <p class="text-sm text-gray-500">AI-powered assistant for Petrogen employees</p>
+                    <h1 class="text-xl font-semibold text-gray-900" id="chat-title">{{ __('messages.new_conversation') }}</h1>
+                    <p class="text-sm text-gray-500">{{ __('messages.app_tagline') }}</p>
                 </div>
                 <button onclick="toggleSidebar()" class="lg:hidden text-gray-500 hover:text-gray-700">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -99,18 +105,7 @@
 
         <!-- Messages Area -->
         <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-6">
-            <!-- Welcome Message -->
-            <div id="welcome-message" class="text-center py-12">
-                <div class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-full mb-6">
-                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                </div>
-                <h2 class="text-3xl font-bold text-gray-900 mb-4">Welcome to PetrogenAI</h2>
-                <p class="text-gray-600 max-w-2xl mx-auto">
-                    Your AI-powered assistant is ready to help. Ask questions, upload documents, and get intelligent responses powered by OpenAI.
-                </p>
-            </div>
+            <!-- Welcome Message -->\n            <div id=\"welcome-message\" class=\"text-center py-12\">\n                <div class=\"inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-6 shadow-lg\">\n                    <svg class=\"w-12 h-12 text-white\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n                        <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z\" />\n                    </svg>\n                </div>\n                <h2 class=\"text-3xl font-bold text-gray-900 mb-4\">{{ __('messages.welcome_title') }}</h2>\n                <p class=\"text-gray-600 max-w-2xl mx-auto\">\n                    {{ __('messages.welcome_message') }}\n                </p>\n            </div>
 
             <!-- Messages will be inserted here -->
             <div id="messages"></div>
@@ -142,14 +137,14 @@
                     <!-- Message Input -->
                     <div class="flex-1 relative">
                         <textarea id="message-input" name="message" rows="1" 
-                                  placeholder="Type your message here..." 
+                                  placeholder="{{ __('messages.type_message') }}" 
                                   class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                                   style="max-height: 200px;"></textarea>
                     </div>
 
                     <!-- Send Button -->
                     <button type="submit" id="send-button"
-                            class="p-3 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white rounded-xl transition duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+                            class="p-3 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl transition duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                         </svg>
@@ -174,6 +169,14 @@
     messageInput.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Handle Enter key (submit) and Shift+Enter (new line)
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            document.getElementById('chat-form').dispatchEvent(new Event('submit'));
+        }
     });
 
     // Handle file selection
@@ -225,17 +228,22 @@
         const messageInput = document.getElementById('message-input');
         const message = messageInput.value.trim();
         
-        if (!message) return;
+        if (!message && selectedFiles.length === 0) return;
         
         // Disable form
         const sendButton = document.getElementById('send-button');
         sendButton.disabled = true;
         messageInput.disabled = true;
         
-        // Add user message to chat
-        addMessage(message, 'user');
+        // Add user message to chat with attachments if any
+        const attachmentsForDisplay = selectedFiles.map(file => ({
+            filename: file.name,
+            size: file.size,
+            mime_type: file.type
+        }));
+        addMessage(message || 'Please analyze the attached file(s)', 'user', false, attachmentsForDisplay);
         
-        // Clear input
+        // Clear input immediately
         messageInput.value = '';
         messageInput.style.height = 'auto';
         
@@ -244,7 +252,7 @@
         
         // Prepare form data
         const formData = new FormData();
-        formData.append('message', message);
+        formData.append('message', message || 'Please analyze the attached file(s)');
         if (currentConversationId) {
             formData.append('conversation_id', currentConversationId);
         }
@@ -253,6 +261,11 @@
         selectedFiles.forEach(file => {
             formData.append('attachments[]', file);
         });
+        
+        // Clear attachments immediately after adding to form
+        selectedFiles = [];
+        document.getElementById('file-input').value = '';
+        updateAttachmentsPreview();
         
         // Show loading
         const loadingDiv = addMessage('Thinking...', 'assistant', true);
@@ -266,7 +279,9 @@
                 body: formData
             });
             
+            console.log('Response status:', response.status);
             const data = await response.json();
+            console.log('Response data:', data);
             
             // Remove loading message
             loadingDiv.remove();
@@ -279,11 +294,6 @@
                 // Add assistant response
                 addMessage(data.assistant_message.content, 'assistant');
                 
-                // Clear attachments
-                selectedFiles = [];
-                document.getElementById('file-input').value = '';
-                updateAttachmentsPreview();
-                
                 // Reload conversations list if new conversation
                 if (!document.querySelector(`.conversation-item[data-id="${currentConversationId}"]`)) {
                     location.reload();
@@ -293,6 +303,7 @@
             }
         } catch (error) {
             loadingDiv.remove();
+            console.error('Error sending message:', error);
             addMessage('Sorry, there was an error connecting to the server. Please try again.', 'assistant');
         }
         
@@ -302,14 +313,31 @@
         messageInput.focus();
     });
 
-    function addMessage(content, role, isLoading = false) {
+    function addMessage(content, role, isLoading = false, attachments = []) {
         const messagesContainer = document.getElementById('messages');
         const messageDiv = document.createElement('div');
-        messageDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
+        messageDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'} mb-4`;
         
         const bubbleClass = role === 'user' 
-            ? 'bg-gradient-to-r from-blue-600 to-indigo-700 text-white' 
-            : 'bg-white border border-gray-200 text-gray-900';
+            ? 'bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md' 
+            : 'bg-gradient-to-r from-white to-gray-50 border border-gray-200 text-gray-900 shadow-sm';
+        
+        // Build attachments HTML
+        let attachmentsHTML = '';
+        if (attachments && attachments.length > 0) {
+            attachmentsHTML = '<div class="mt-2 space-y-1">';
+            attachments.forEach(att => {
+                const icon = att.mime_type === 'application/pdf' ? '📄' : '📎';
+                attachmentsHTML += `
+                    <div class="flex items-center space-x-2 bg-white bg-opacity-20 px-3 py-1.5 rounded-lg text-sm">
+                        <span>${icon}</span>
+                        <span class="truncate">${att.original_filename}</span>
+                        <span class="text-xs opacity-75">${formatFileSize(att.size)}</span>
+                    </div>
+                `;
+            });
+            attachmentsHTML += '</div>';
+        }
         
         const loadingIndicator = isLoading ? `
             <div class="flex space-x-1 mt-2">
@@ -320,8 +348,9 @@
         ` : '';
         
         messageDiv.innerHTML = `
-            <div class="max-w-3xl px-4 py-3 rounded-2xl ${bubbleClass} shadow-sm">
-                <div class="prose prose-sm max-w-none">${escapeHtml(content)}</div>
+            <div class="max-w-3xl px-5 py-3.5 rounded-2xl ${bubbleClass} shadow-sm" dir="auto">
+                ${attachmentsHTML}
+                <div class="whitespace-pre-wrap break-words leading-relaxed ${attachments.length > 0 ? 'mt-2' : ''}">${formatMessage(content)}</div>
                 ${loadingIndicator}
             </div>
         `;
@@ -332,10 +361,26 @@
         return messageDiv;
     }
 
-    function escapeHtml(text) {
+    function formatMessage(text) {
+        if (!text) return '';
+        
+        // First, escape HTML to prevent XSS
         const div = document.createElement('div');
         div.textContent = text;
-        return div.innerHTML.replace(/\n/g, '<br>');
+        let escaped = div.innerHTML;
+        
+        // Convert literal \n to actual newlines
+        escaped = escaped.replace(/\\n/g, '\n');
+        
+        return escaped;
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
     }
 
     function startNewChat() {
@@ -343,8 +388,13 @@
         document.getElementById('conversation-id').value = '';
         document.getElementById('messages').innerHTML = '';
         document.getElementById('welcome-message')?.classList.remove('hidden');
-        document.getElementById('chat-title').textContent = 'New Conversation';
+        document.getElementById('chat-title').textContent = '{{ __('messages.new_conversation') }}';
         document.getElementById('message-input').focus();
+        
+        // Remove active state from all conversations
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.classList.remove('bg-gradient-to-r', 'from-gray-700', 'to-gray-800');
+        });
         
         // Remove active class from all conversations
         document.querySelectorAll('.conversation-item').forEach(item => {
@@ -366,16 +416,19 @@
             const messagesContainer = document.getElementById('messages');
             messagesContainer.innerHTML = '';
             
-            // Add messages
+            // Add messages with attachments
             data.messages.forEach(message => {
-                addMessage(message.content, message.role);
+                addMessage(message.content, message.role, false, message.attachments || []);
             });
             
             // Update active conversation
             document.querySelectorAll('.conversation-item').forEach(item => {
-                item.classList.remove('bg-gray-800');
+                item.classList.remove('bg-gradient-to-r', 'from-gray-700', 'to-gray-800');
             });
-            document.querySelector(`.conversation-item[data-id="${id}"]`)?.classList.add('bg-gray-800');
+            const activeItem = document.querySelector(`.conversation-item[data-id="${id}"]`);
+            if (activeItem) {
+                activeItem.classList.add('bg-gradient-to-r', 'from-gray-700', 'to-gray-800');
+            }
             
         } catch (error) {
             console.error('Error loading conversation:', error);
@@ -402,6 +455,27 @@
             }
         } catch (error) {
             console.error('Error deleting conversation:', error);
+        }
+    }
+
+    // Language Switcher
+    async function switchLanguage(locale) {
+        try {
+            const response = await fetch('{{ route("language.switch") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+                body: JSON.stringify({ locale })
+            });
+            
+            if (response.ok) {
+                // Reload page to apply language
+                window.location.reload();
+            }
+        } catch (error) {
+            console.error('Language switch failed:', error);
         }
     }
 
