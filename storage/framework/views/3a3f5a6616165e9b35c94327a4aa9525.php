@@ -1,14 +1,14 @@
-@extends('layouts.app')
 
-@section('title', 'Login - PetrogenAI')
 
-@section('content')
+<?php $__env->startSection('title', 'Login - PetrogenAI'); ?>
+
+<?php $__env->startSection('content'); ?>
 <div class="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-indigo-100">
     <div class="max-w-md w-full space-y-8">
         <!-- Logo and Title -->
         <div class="text-center">
             <div class="flex justify-center">
-                <img src="{{ asset('logo.svg') }}" alt="PetrogenAI" class="h-20 w-auto">
+                <img src="<?php echo e(asset('logo.svg')); ?>" alt="PetrogenAI" class="h-20 w-auto">
             </div>
             <h2 class="mt-6 text-3xl font-bold text-gray-900">PetrogenAI</h2>
             <p class="mt-2 text-sm text-gray-600">Sign in to your account</p>
@@ -16,10 +16,10 @@
 
         <!-- Login Form -->
         <div class="bg-white rounded-2xl shadow-xl p-8">
-            <form method="POST" action="{{ route('login') }}" class="space-y-6">
-                @csrf
+            <form method="POST" action="<?php echo e(route('login')); ?>" class="space-y-6">
+                <?php echo csrf_field(); ?>
 
-                @if ($errors->any())
+                <?php if($errors->any()): ?>
                     <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
                         <div class="flex">
                             <div class="flex-shrink-0">
@@ -28,17 +28,17 @@
                                 </svg>
                             </div>
                             <div class="ml-3">
-                                <p class="text-sm text-red-700">{{ $errors->first() }}</p>
+                                <p class="text-sm text-red-700"><?php echo e($errors->first()); ?></p>
                             </div>
                         </div>
                     </div>
-                @endif
+                <?php endif; ?>
 
                 <!-- Email Field -->
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                     <input id="email" name="email" type="email" required autofocus
-                           value="{{ old('email') }}"
+                           value="<?php echo e(old('email')); ?>"
                            class="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-lg placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-150"
                            placeholder="you@petrogen.sa">
                     <p class="mt-1 text-xs text-gray-600">
@@ -55,10 +55,12 @@
                 </div>
 
                 <!-- Remember Me -->
-                <div class="flex items-center">
-                    <input id="remember" name="remember" type="checkbox"
-                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember" name="remember" type="checkbox"
+                               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        <label for="remember" class="ml-2 block text-sm text-gray-700">Remember me</label>
+                    </div>
                 </div>
 
                 <!-- Submit Button -->
@@ -71,7 +73,7 @@
                 <div class="text-center">
                     <p class="text-sm text-gray-600">
                         Don't have an account?
-                        <a href="{{ route('register') }}" class="font-medium text-blue-600 hover:text-blue-500">Sign up</a>
+                        <a href="<?php echo e(route('register')); ?>" class="font-medium text-blue-600 hover:text-blue-500">Sign up</a>
                     </p>
                 </div>
             </form>
@@ -79,8 +81,10 @@
 
         <!-- Footer -->
         <p class="text-center text-xs text-gray-500">
-            &copy; {{ date('Y') }} Petrogen. All rights reserved.
+            &copy; <?php echo e(date('Y')); ?> Petrogen. All rights reserved.
         </p>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\Users\salih\OneDrive\Desktop\SYSMNT\AI\Ai Projects\PetrogenAI\PetrogenAi\resources\views/auth/login.blade.php ENDPATH**/ ?>
